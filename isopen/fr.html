@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirect Page</title>
+  <script>
+    window.onload = function() {
+      const params = new URLSearchParams(window.location.search);
+      let domain = params.get('domain');
+
+      // Проверка и замена "." на "_"
+      if (domain) {
+        domain = domain.replace(/\./g, '_');
+        domain = `site_${domain}`;
+      }
+
+      // Формируем URL для JSONP запроса
+      const script = document.createElement('script');
+      script.src = `https://alreferal.ru/get_random_bot_hash.php?hash_id=03f5652911133e62454158a3ee6294de86d9de7629e5e13a8e00f24084cec0bb&callback=handleBotName`;
+      document.body.appendChild(script);
+      
+      // Функция для обработки данных
+      window.handleBotName = function(random_bot_name) {
+        // Создаем ссылку для перенаправления
+        const urlRedirect = `https://t.me/${random_bot_name}/?start=${domain}`;
+        // Перенаправляем пользователя
+        window.location.href = urlRedirect;
+      };
+    };
+  </script>
+</head>
+<body>
+  <h1>Перенаправление...</h1>
+  <p>Вы будете перенаправлены на Telegram.</p>
+</body>
+</html>
