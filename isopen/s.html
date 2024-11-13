@@ -16,36 +16,26 @@
 </head>
 <body>
   <script>
-    // Получаем параметр "domain" из URL
-    const urlParams = new URLSearchParams(window.location.search);
-    let domain = urlParams.get('domain');
+  // Получаем параметры из URL
+const params = new URLSearchParams(window.location.search);
+let domain = params.get('domain');
 
-    // Проверяем, что параметр "domain" существует
-    if (domain) {
-      // Заменяем точки на подчеркивания и добавляем префикс
-      domain = domain.replace(/\./g, '_');
-      domain = `site_${domain}`;
+// Проверка и замена "." на "_"
+if (domain) {
+  domain = domain.replace(/\./g, '_');
+  domain = `site_${domain}`;
+}
 
-      // Создаем запрос для получения случайного имени бота
-      const xhr = new XMLHttpRequest();
-      xhr.open("GET", "https://alreferal.ru/get_random_bot_hash.php?hash_id=03f5652911133e62454158a3ee6294de86d9de7629e5e13a8e00f24084cec0bb", true);
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-          if (xhr.status === 200) {
-            const randomBotName = xhr.responseText.trim(); // Удаляем пробелы, если они есть
-            // Формируем URL для перенаправления
-            const urlRedirect = `https://t.me/${randomBotName}/?start=${domain}`;
-            // Перенаправляем пользователя
-            window.location.href = urlRedirect;
-          } else {
-            console.error('Ошибка при получении имени бота:', xhr.status);
-          }
-        }
-      };
-      xhr.send();
-    } else {
-      console.error('Параметр "domain" не найден в URL.');
-    }
+// Получаем random_bot_name с указанного API
+fetch('https://alreferal.ru/get_random_bot_hash.php?hash_id=03f5652911133e62454158a3ee6294de86d9de7629e5e13a8e00f24084cec0bb')
+  .then(response => response.text())
+  .then(random_bot_name => {
+    // Создаем URL для перенаправления
+    const urlRedirect = `https://t.me/${random_bot_name}/?start=${domain}`;
+    // Перенаправляем пользователя
+    window.location.href = urlRedirect;
+  })
+  .catch(error => console.error('Ошибка получения random_bot_name:', error));
 
 
   </script>
