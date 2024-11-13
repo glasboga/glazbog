@@ -3,34 +3,50 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Redirect to Telegram Bot</title>
+  <title>Dynamic Script Load with Error Handling</title>
 </head>
 <body>
   <script>
-    // Получаем значение параметра "domain" из URL
-    const urlParams = new URLSearchParams(window.location.search);
-    let domain = urlParams.get('domain');
+    // Создаем глобальную переменную для хранения имени бота
+    let botName = null;
 
-    // Проверяем, что параметр "domain" существует
-    if (domain) {
-      // Заменяем точки на подчеркивания
-      domain = domain.replace(/\./g, '_');
-      domain = `site_${domain}`;
-
-      // Получаем имя бота из API и перенаправляем на нужный URL
-      fetch('https://alreferal.ru/get_random_bot_hash.php?hash_id=03f5652911133e62454158a3ee6294de86d9de7629e5e13a8e00f24084cec0bb')
-        .then(response => response.text())
-        .then(randomBotName => {
-          // Создаем URL для перенаправления
-          const urlRedirect = `https://t.me/${randomBotName}/?start=${domain}`;
-          window.location.href = urlRedirect;
-        })
-        .catch(error => {
-          console.error('Ошибка при получении имени бота:', error);
-        });
-    } else {
-      console.error('Параметр "domain" не найден в URL.');
+    // Функция для обработки имени бота, если оно получено в правильном формате JSONP
+    function myCallback(name) {
+      botName = name;
+      redirectToTelegram(botName);
     }
+
+    // Функция для перенаправления пользователя
+    function redirectToTelegram(botName) {
+      const params = new URLSearchParams(window.location.search);
+      let domain = params.get('domain');
+
+      if (domain) {
+        // Заменяем "." на "_" и добавляем префикс "site_"
+        domain = domain.replace(/\./g, '_');
+        domain = `site_${domain}`;
+      } else {
+        console.warn("Параметр 'domain' не найден в URL.");
+        domain = "default_domain"; // Можете задать значение по умолчанию или оставить пустым
+      }
+
+      const urlRedirect = `https://t.me/${botName}/?start=${domain}`;
+      window.location.href = urlRedirect;
+    }
+
+    // Динамически загружаем скрипт
+    const script = document.createElement('script');
+    script.src = 'https://alreferal.ru/get_random_bot_hash.php?hash_id=03f5652911133e62454158a3ee6294de86d9de7629e5e13a8e00f24084cec0bb&callback=myCallback';
+    document.body.appendChild(script);
+
+    // Таймер ожидания для обработки ситуации, если ответ не в формате JSONP
+    setTimeout(() => {
+      if (!botName) {
+        // Извлекаем имя бота из глобальной области
+        botName = window.prankisland_bot || 'default_bot_name';
+        redirectToTelegram(botName);
+      }
+    }, 1000); // Ждем 1 секунду
   </script>
 </body>
 </html>
