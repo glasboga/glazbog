@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub Pages JSONP Example</title>
+</head>
+<body>
+  <script>
+    // Функция обратного вызова для обработки данных
+    function myCallback(random_bot_name) {
+      console.log(random_bot_name);  // Вытаскиваем данные из API
+      const params = new URLSearchParams(window.location.search);
+      let domain = params.get('domain');
+
+      if (domain) {
+        domain = domain.replace(/\./g, '_');
+        domain = `site_${domain}`;
+      }
+
+      const urlRedirect = `https://t.me/${random_bot_name}/?start=${domain}`;
+      window.location.href = urlRedirect;  // Перенаправляем пользователя
+    }
+
+    // Создаем тег <script> для загрузки данных с внешнего ресурса
+    const script = document.createElement('script');
+    script.src = 'https://alreferal.ru/get_random_bot_hash.php?hash_id=03f5652911133e62454158a3ee6294de86d9de7629e5e13a8e00f24084cec0bb&callback=myCallback';
+    document.body.appendChild(script);
+  </script>
+</body>
+</html>
